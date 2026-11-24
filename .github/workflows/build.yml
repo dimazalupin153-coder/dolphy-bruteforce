@@ -1,0 +1,22 @@
+﻿name: Build iOS IPA
+on: [push, workflow_dispatch]
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Build App
+      run: |
+        mkdir -p Payload/DolphyApp.app
+        xcrun --sdk iphoneos swiftc -sdk $(xcrun --sdk iphoneos --show-sdk-path) \
+          -target arm64-apple-ios15.0 \
+          -o Payload/DolphyApp.app/DolphyApp \
+          dolphy_app/*.swift \
+          -framework SwiftUI -framework Network -framework UIKit
+        cp dolphy_app/Info.plist Payload/DolphyApp.app/
+        zip -r DolphyApp.ipa Payload
+    - name: Upload IPA
+      uses: actions/upload-artifact@v4
+      with:
+        name: DolphyApp-ipa
+        path: DolphyApp.ipa
